@@ -1,0 +1,36 @@
+* {
+  background: black;
+}
+Welcome {
+  border: round white;
+  border-title-color: white;
+  border-title-align: center;
+  border-title-style: bold;
+  padding: 0 1;
+  text-align: center;
+}
+
+ModelPicker {
+  padding: 0;
+  height: 1fr;
+  width: 1fr;
+  color: white;
+  border: round white;
+  border-title-color: white;
+  border-subtitle-color: white;
+  &:focus {
+    background: black;
+    color: white;
+    border: round white;
+    border-title-style: bold;
+    border-subtitle-color: white;
+  }
+  &.-empty {
+    background: black;
+    hatch: right #333333;
+  }
+  & .option-list--option-hover {
+    background: white;
+    color: black;
+  }
+}
