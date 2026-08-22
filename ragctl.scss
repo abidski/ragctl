@@ -36,7 +36,7 @@ ModelPicker {
 }
 ApiKeyInputScreen {
   align: center middle;
-  background: red;
+  background: black;
 }
 
 ApiInputForm {
@@ -44,8 +44,8 @@ ApiInputForm {
   background: black;
   color: white;
   border: solid white;
-  width: 50%;
-  height: 25%;
+  width: 70%;
+  height: 50%;
 }
 ApiInputForm Vertical {
   align: center middle;
@@ -62,6 +62,10 @@ ApiInputForm Input {
   border: solid white;
 }
 
+ApiInputForm Input > .input--cursor {
+  background: grey;
+  color: black;
+}
 ApiInputForm Button {
   border: solid white;
 }

@@ -15,8 +15,35 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_groq import ChatGroq
 
-if not os.environ.get("GROQ_API_KEY"):
-    os.environ["GROQ_API_KEY"] = getpass.getpass("Enter Groq API key: ")
+
+MODELS_BY_PROVIDER = {
+    "groq": "openai/gpt-oss-120b",
+    "anthropic": "claude-haiku-4-5-20251001",
+    "openai": "gpt-4o-mini",
+    "ollama": "llama3.2",
+}
+
+
+def build_llm(provider: str):
+    model = MODELS_BY_PROVIDER[provider]
+
+    if provider == "groq":
+        from langchain_groq import ChatGroq
+
+        return ChatGroq(model=model)
+
+    elif provider == "anthropic":
+        from langchain_anthropic import ChatAnthropic
+
+        return ChatAnthropic(model=model)
+
+    elif provider == "ollama":
+        from langchain_ollama import OllamaLLM
+
+        return OllamaLLM(model=model)
+
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
 
 
 # Initialize the model
