@@ -34,3 +34,34 @@ ModelPicker {
     color: black;
   }
 }
+ApiKeyInputScreen {
+  align: center middle;
+  background: red;
+}
+
+ApiInputForm {
+  align: center middle;
+  background: black;
+  color: white;
+  border: solid white;
+  width: 50%;
+  height: 25%;
+}
+ApiInputForm Vertical {
+  align: center middle;
+  width: 100%;
+  height: auto;
+}
+
+#form-title {
+  text-align: center;
+}
+
+ApiInputForm Input {
+  width: 50%;
+  border: solid white;
+}
+
+ApiInputForm Button {
+  border: solid white;
+}
