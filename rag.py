@@ -1,3 +1,5 @@
+from langchain_core.documents import Document
+from langchain_chroma import Chroma
 import tiktoken
 from langchain_huggingface import HuggingFaceEmbeddings
 import getpass
@@ -12,7 +14,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_anthropic import ChatAnthropic
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, Runnable
 from langchain_groq import ChatGroq
 
 
@@ -54,42 +56,51 @@ llm = ChatGroq(
 
 
 # Load documents
-cwd = os.getcwd()
-pdf_loader = DirectoryLoader(cwd, glob="**/*.pdf", loader_cls=PyPDFLoader)
+def load_documents() -> list[Document]:
+    cwd = os.getcwd()
+    pdf_loader = DirectoryLoader(cwd, glob="**/*.pdf", loader_cls=PyPDFLoader)
 
-docs = pdf_loader.load()
+    return pdf_loader.load()
+
 
 # Split documents
 
+
 # Initialize the text splitter
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000, chunk_overlap=200, add_start_index=True
-)
+def split_documents(docs: list[Document]) -> list[Document]:
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000, chunk_overlap=200, add_start_index=True
+    )
 
-# Split loaded document pages (e.g. from a PDF loader)
-all_splits = text_splitter.split_documents(docs)
-
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    # Split loaded document pages (e.g. from a PDF loader)
+    return text_splitter.split_documents(docs)
 
 
-vectorstore = Chroma.from_documents(documents=all_splits, embedding=embeddings)
+def build_vectorstore(all_splits: list[Document]) -> Chroma:
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
-retriever = vectorstore.as_retriever()
+    return Chroma.from_documents(documents=all_splits, embedding=embeddings)
 
-template = """Answer the question based only on the following context:
-{context}
 
-Question: {question}
-"""
+def rag(vectorstore: Chroma) -> Runnable:
+    retriever = vectorstore.as_retriever()
 
-prompt = ChatPromptTemplate.from_template(template)
+    template = """Answer the question based only on the following context:
+    {context}
 
-rag_chain = (
-    {"context": retriever, "question": RunnablePassthrough()}
-    | prompt
-    | llm
-    | StrOutputParser()
-)
+    Question: {question}
+    """
+
+    prompt = ChatPromptTemplate.from_template(template)
+
+    rag_chain = (
+        {"context": retriever, "question": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+    return rag_chain
+
 
 result = rag_chain.invoke("What subjects do I have to study")
 print(result)

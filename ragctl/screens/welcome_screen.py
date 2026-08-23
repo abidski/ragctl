@@ -1,10 +1,13 @@
+from textual import on
+from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer
-from ragctl.widgets.welcome import Welcome
-from textual.app import ComposeResult
-from ragctl.widgets.provider_picker import ProviderPicker
-from textual import on
+
+from ragctl.api_key import get_api_key
 from ragctl.screens.api_key_input_screen import ApiKeyInputScreen
+from ragctl.screens.chat_screen import ChatScreen
+from ragctl.widgets.provider_picker import ProviderPicker
+from ragctl.widgets.welcome import Welcome
 
 
 class WelcomeScreen(Screen):
@@ -18,4 +21,8 @@ class WelcomeScreen(Screen):
     @on(ProviderPicker.ProviderChosen)
     def handle_provider_chosen(self, event: ProviderPicker.ProviderChosen) -> None:
         self.app.selected_provider = event.provider
-        self.app.push_screen(ApiKeyInputScreen(provider=event.provider))
+        api_key = get_api_key(self.app.selected_provider)
+        if api_key:
+            self.app.push_screen(ChatScreen(self.app.selected_provider, api_key))
+        else:
+            self.app.push_screen(ApiKeyInputScreen(provider=event.provider))
