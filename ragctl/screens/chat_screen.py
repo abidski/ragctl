@@ -1,21 +1,42 @@
-from ragctl.models import build_llm
-from ragctl.rag import load_documents, build_vectorstore, build_rag_chain
+from ragctl.rag import (
+    build_llm,
+    load_documents,
+    build_vectorstore,
+    split_documents,
+    rag_chain,
+)
 from pathlib import Path
 import os
+from textual.screen import Screen
+from textual.widgets import Header, Footer, LoadingIndicator
+from textual.app import ComposeResult
+from ragctl.widgets.chat import Chat
 
 
 class ChatScreen(Screen):
     def __init__(self, provider: str, api_key: str) -> None:
-        self.provider = provider
+        self.provider = provider.lower()
         self.api_key = api_key
         self.docs_folder = str(Path.cwd())
         super().__init__()
 
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield LoadingIndicator(id="loading")
+        yield Footer()
+
     def on_mount(self) -> None:
+        self.run_worker(self._setup, thread=True)
 
+    def _setup(self) -> None:
         os.environ[f"{self.provider.upper()}_API_KEY"] = self.api_key
-
         llm = build_llm(self.provider)
         docs = load_documents(self.docs_folder)
-        vectorstore = build_vectorstore(docs)
-        self.rag_chain = build_rag_chain(vectorstore, llm)
+        splits = split_documents(docs)
+        vectorstore = build_vectorstore(splits)
+        self.rag_chain = rag_chain(vectorstore, llm)
+        self.app.call_from_thread(self._on_ready, self.rag_chain)
+
+    def _on_ready(self, chain) -> None:
+        self.query_one("#loading").remove()
+        self.mount(Chat(chain))

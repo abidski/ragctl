@@ -1,22 +1,30 @@
-from langchain_core.documents import Document
-from langchain_chroma import Chroma
-import tiktoken
-from langchain_huggingface import HuggingFaceEmbeddings
+import os
+
+os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
+import contextlib
+import tqdm
+
+tqdm.tqdm.set_lock(contextlib.nullcontext())
 import getpass
-from langchain_community.vectorstores import Chroma
+import os
+
+import tiktoken
+from langchain_anthropic import ChatAnthropic
+from langchain_chroma import Chroma
 from langchain_community.document_loaders import (
     DirectoryLoader,
-    TextLoader,
     PyPDFLoader,
+    TextLoader,
 )
-import os
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_anthropic import ChatAnthropic
+from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough, Runnable
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import Runnable, RunnablePassthrough
 from langchain_groq import ChatGroq
-
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 MODELS_BY_PROVIDER = {
     "groq": "openai/gpt-oss-120b",
@@ -48,16 +56,9 @@ def build_llm(provider: str):
         raise ValueError(f"Unknown provider: {provider}")
 
 
-# Initialize the model
-llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0,
-)
-
-
 # Load documents
-def load_documents() -> list[Document]:
-    cwd = os.getcwd()
+def load_documents(cwd: str) -> list[Document]:
+
     pdf_loader = DirectoryLoader(cwd, glob="**/*.pdf", loader_cls=PyPDFLoader)
 
     return pdf_loader.load()
@@ -78,11 +79,10 @@ def split_documents(docs: list[Document]) -> list[Document]:
 
 def build_vectorstore(all_splits: list[Document]) -> Chroma:
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-
     return Chroma.from_documents(documents=all_splits, embedding=embeddings)
 
 
-def rag(vectorstore: Chroma) -> Runnable:
+def rag_chain(vectorstore: Chroma, llm) -> Runnable:
     retriever = vectorstore.as_retriever()
 
     template = """Answer the question based only on the following context:
@@ -102,5 +102,5 @@ def rag(vectorstore: Chroma) -> Runnable:
     return rag_chain
 
 
-result = rag_chain.invoke("What subjects do I have to study")
-print(result)
+# result = rag_chain.invoke("What subjects do I have to study")
+# print(result)
