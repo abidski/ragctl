@@ -5,6 +5,7 @@ from textual.screen import ModalScreen
 from ragctl.widgets.api_input import ApiInputForm
 from textual import on
 from ragctl.api_key import save_key
+from ragctl.screens.chat_screen import ChatScreen
 
 
 class ApiKeyInputScreen(ModalScreen):
@@ -19,3 +20,4 @@ class ApiKeyInputScreen(ModalScreen):
     def handle_key_submitted(self, event: ApiInputForm.KeySubmitted) -> None:
         save_key(self.provider, event.key)
         self.dismiss()
+        self.app.push_screen(ChatScreen(self.provider, event.key))

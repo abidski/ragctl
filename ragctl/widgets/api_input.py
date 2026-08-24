@@ -8,12 +8,6 @@ from textual.widgets import Button, Input, Static
 
 
 class ApiInputForm(Widget):
-    CSS = """
-            #api-key-input > .input--cursor {
-              background: grey;
-              color: black;
-            } """
-
     @dataclass
     class KeySubmitted(Message):
         key: str

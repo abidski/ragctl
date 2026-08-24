@@ -8,21 +8,6 @@ from textual.widgets import Input, RichLog
 
 
 class Chat(Widget):
-    CSS = """
-    RichLog {
-        border: solid white;
-        background: black;
-        color: white;
-        height: 1fr;
-    }
-
-    Input {
-        background: black;
-        color: white;
-        border: solid white;
-    }
-    """
-
     @dataclass
     class NewUserMessage(Message):
         text: str
@@ -38,7 +23,7 @@ class Chat(Widget):
 
     def compose(self) -> ComposeResult:
         yield Vertical(
-            RichLog(id="chat-log", wrap=True),
+            RichLog(id="chat-log", wrap=True, markup=True),
             Input(
                 placeholder="Ask a question about your documents...",
                 id="question-input",
@@ -60,9 +45,5 @@ class Chat(Widget):
         log.write(f"[bold cyan]> {question}[/bold cyan]")
         input_widget.value = ""
 
-        self.post_message(self.NewUserMessage(text=question))
-
         answer = await self.rag_chain.ainvoke(question)
         log.write(f"{answer}\n")
-
-        self.post_message(self.AgentResponseComplete(answer=answer))
