@@ -6,6 +6,10 @@ from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Input, RichLog
 
+import re
+from sympy.parsing.latex import parse_latex
+from sympy import pretty
+
 
 class Chat(Widget):
     @dataclass

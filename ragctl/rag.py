@@ -9,6 +9,10 @@ import tqdm
 tqdm.tqdm.set_lock(contextlib.nullcontext())
 import getpass
 import os
+import re
+from sympy.parsing.latex import parse_latex
+from sympy import pretty
+
 
 import tiktoken
 from langchain_anthropic import ChatAnthropic
@@ -85,10 +89,26 @@ def build_vectorstore(all_splits: list[Document]) -> Chroma:
 def rag_chain(vectorstore: Chroma, llm) -> Runnable:
     retriever = vectorstore.as_retriever()
 
-    template = """Answer the question based only on the following context:
-    {context}
+    template = """
+        Answer the question using only the context below.
 
-    Question: {question}
+        FORMATTING RULES - this is displayed in a plain terminal:
+        - For math, use Unicode symbols directly in your text instead of LaTeX:
+          - Superscripts: x² x³ (not x^2, x^3) — use ² ³ ⁴ ⁵ ⁿ etc.
+          - Subscripts: use ₀ ₁ ₂ ₓ etc. where natural, or write plainly (F_x -> "F sub x")
+          - Square root: √x (not \\sqrt{{x}})
+          - Fractions: write as "dy/dx" or "(a+b)/c", or use ½ ⅓ ¼ for simple ones
+          - Symbols: use ∂ π ∞ ≤ ≥ × ÷ ± ∫ Σ Δ → directly as characters
+          - Do NOT use LaTeX commands or backslashes (no \\frac, \\lim, \\sqrt, \\(, \\[, $$, etc.)
+        - Do not use markdown formatting (no **bold**, no *italics*, no markdown bullet asterisks).
+        - Use plain numbered lists (1. 2. 3.) or simple dashes (-) for lists.
+        - Write in plain, complete sentences.
+
+        Context:
+        {context}
+
+        Question: {question}
+        Answer:
     """
 
     prompt = ChatPromptTemplate.from_template(template)
