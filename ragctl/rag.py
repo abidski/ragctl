@@ -4,29 +4,21 @@ os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 import contextlib
+
 import tqdm
 
 tqdm.tqdm.set_lock(contextlib.nullcontext())
-import getpass
 import os
-import re
-from sympy.parsing.latex import parse_latex
-from sympy import pretty
 
-
-import tiktoken
-from langchain_anthropic import ChatAnthropic
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import (
     DirectoryLoader,
     PyPDFLoader,
-    TextLoader,
 )
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable, RunnablePassthrough
-from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 

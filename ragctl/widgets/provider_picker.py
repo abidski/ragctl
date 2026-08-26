@@ -5,7 +5,6 @@ from textual.app import ComposeResult
 from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import RadioButton, RadioSet
-from ragctl.screens.api_key_input_screen import ApiKeyInputScreen
 
 
 class ProviderRadioButton(RadioButton):

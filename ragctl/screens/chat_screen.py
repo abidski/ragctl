@@ -1,15 +1,17 @@
+import os
+from pathlib import Path
+
+from textual.app import ComposeResult
+from textual.screen import Screen
+from textual.widgets import Footer, Header, LoadingIndicator
+
 from ragctl.rag import (
     build_llm,
-    load_documents,
     build_vectorstore,
-    split_documents,
+    load_documents,
     rag_chain,
+    split_documents,
 )
-from pathlib import Path
-import os
-from textual.screen import Screen
-from textual.widgets import Header, Footer, LoadingIndicator
-from textual.app import ComposeResult
 from ragctl.widgets.chat import Chat
 
 

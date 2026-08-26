@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from textual.message import Message
+
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Center, Vertical
+from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Button, Input, Static
 

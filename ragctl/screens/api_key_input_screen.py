@@ -1,11 +1,10 @@
-from textual.containers import Vertical
-from textual.app import ComposeResult
-from textual.widgets import Input, Button
-from textual.screen import ModalScreen
-from ragctl.widgets.api_input import ApiInputForm
 from textual import on
+from textual.app import ComposeResult
+from textual.screen import ModalScreen
+
 from ragctl.api_key import save_key
 from ragctl.screens.chat_screen import ChatScreen
+from ragctl.widgets.api_input import ApiInputForm
 
 
 class ApiKeyInputScreen(ModalScreen):

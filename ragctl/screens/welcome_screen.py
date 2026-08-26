@@ -1,7 +1,6 @@
 from textual import on
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Footer
 
 from ragctl.api_key import get_api_key
 from ragctl.screens.api_key_input_screen import ApiKeyInputScreen
