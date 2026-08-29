@@ -16,8 +16,3 @@ class Ragctl(App):
 
     def on_mount(self) -> None:
         self.push_screen(WelcomeScreen())
-
-
-if __name__ == "__main__":
-    app = Ragctl()
-    app.run()

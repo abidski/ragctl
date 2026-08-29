@@ -4,6 +4,7 @@ from pathlib import Path
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Footer, Header, LoadingIndicator
+from textual.widgets import Static
 
 from ragctl.rag import (
     build_llm,
@@ -32,13 +33,20 @@ class ChatScreen(Screen):
 
     def _setup(self) -> None:
         os.environ[f"{self.provider.upper()}_API_KEY"] = self.api_key
-        llm = build_llm(self.provider)
-        docs = load_documents(self.docs_folder)
-        splits = split_documents(docs)
-        vectorstore = build_vectorstore(splits)
-        self.rag_chain = rag_chain(vectorstore, llm)
-        self.app.call_from_thread(self._on_ready, self.rag_chain)
+        try:
+            llm = build_llm(self.provider)
+            docs = load_documents(self.docs_folder)
+            splits = split_documents(docs)
+            vectorstore = build_vectorstore(splits)
+            self.rag_chain = rag_chain(vectorstore, llm)
+            self.app.call_from_thread(self._on_ready, self.rag_chain)
+        except Exception as e:
+            self.app.call_from_thread(self._on_error, str(e))
 
     def _on_ready(self, chain) -> None:
         self.query_one("#loading").remove()
         self.mount(Chat(chain))
+
+    def _on_error(self, error_message: str) -> None:
+        self.query_one("#loading").remove()
+        self.mount(Static(f"[red]Error: {error_message}[/red]"))

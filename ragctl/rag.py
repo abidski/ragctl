@@ -14,6 +14,8 @@ from langchain_chroma import Chroma
 from langchain_community.document_loaders import (
     DirectoryLoader,
     PyPDFLoader,
+    Docx2txtLoader,
+    TextLoader,
 )
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
@@ -56,8 +58,9 @@ def build_llm(provider: str):
 def load_documents(cwd: str) -> list[Document]:
 
     pdf_loader = DirectoryLoader(cwd, glob="**/*.pdf", loader_cls=PyPDFLoader)
-
-    return pdf_loader.load()
+    docx_loader = DirectoryLoader(cwd, glob="**/*.docx", loader_cls=Docx2txtLoader)
+    md_loader = DirectoryLoader(cwd, glob="**/*.md", loader_cls=TextLoader)
+    return pdf_loader.load() + docx_loader.load() + md_loader.load()
 
 
 # Split documents
