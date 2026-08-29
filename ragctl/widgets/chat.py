@@ -1,3 +1,4 @@
+from textual.widget import Widget
 from dataclasses import dataclass
 
 from textual import on
@@ -7,7 +8,7 @@ from textual.message import Message
 from textual.widgets import Input, RichLog
 
 
-class Chat:
+class Chat(Widget):
     @dataclass
     class NewUserMessage(Message):
         text: str
