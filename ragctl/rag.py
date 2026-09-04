@@ -3,6 +3,7 @@ import os
 from langchain.agents import create_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import tool
+from langgraph.checkpoint.memory import InMemorySaver
 
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -114,7 +115,9 @@ def build_agent(vectorstore: Chroma, llm):
             - No LaTeX, no markdown bold/bullets. Use Unicode math symbols (², √, ∂, etc.)
               and plain dashes for lists."""
 
-    agent = create_agent(model=llm, tools=tools, system_prompt=agent_prompt)
+    agent = create_agent(
+        model=llm, tools=tools, system_prompt=agent_prompt, checkpointer=InMemorySaver()
+    )
 
     return agent
 

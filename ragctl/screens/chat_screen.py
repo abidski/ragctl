@@ -43,9 +43,9 @@ class ChatScreen(Screen):
         except Exception as e:
             self.app.call_from_thread(self._on_error, str(e))
 
-    def _on_ready(self, chain) -> None:
+    def _on_ready(self, agent) -> None:
         self.query_one("#loading").remove()
-        self.mount(Chat(chain))
+        self.mount(Chat(agent))
 
     def _on_error(self, error_message: str) -> None:
         self.query_one("#loading").remove()
