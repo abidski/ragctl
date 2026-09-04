@@ -6,6 +6,7 @@ from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.message import Message
 from textual.widgets import Input, RichLog
+from langchain_core.utils.uuid import uuid7
 
 
 class Chat(Widget):
@@ -17,9 +18,10 @@ class Chat(Widget):
     class AgentResponseComplete(Message):
         answer: str
 
-    def __init__(self, rag_chain) -> None:
-        self.rag_chain = rag_chain
+    def __init__(self, agent) -> None:
+        self.agent = agent
         self.allow_input_submit = True
+        self.thread_id = str(uuid7())
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -46,6 +48,9 @@ class Chat(Widget):
         log.write(f"[bold cyan]> {question}[/bold cyan]")
         input_widget.value = ""
 
-        result = await self.rag_chain.ainvoke({"input": question})
-        answer = result["output"]
+        result = await self.agent.ainvoke(
+            {"messages": [{"role": "user", "content": question}]},
+            {"configurable": {"thread_id": self.thread_id}},
+        )
+        answer = result["messages"][-1].content
         log.write(f"{answer}\n")

@@ -1,8 +1,9 @@
 import os
 
-from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain.agents import create_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.tools import tool
+from langgraph.checkpoint.memory import InMemorySaver
 
 os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -87,42 +88,6 @@ def build_vectorstore(all_splits: list[Document]) -> Chroma:
     return Chroma.from_documents(documents=all_splits, embedding=embeddings)
 
 
-def rag_chain(vectorstore: Chroma, llm) -> Runnable:
-    retriever = vectorstore.as_retriever()
-
-    template = """
-        Answer the question using only the context below.
-
-        FORMATTING RULES - this is displayed in a plain terminal:
-        - For math, use Unicode symbols directly in your text instead of LaTeX:
-          - Superscripts: x² x³ (not x^2, x^3) — use ² ³ ⁴ ⁵ ⁿ etc.
-          - Subscripts: use ₀ ₁ ₂ ₓ etc. where natural, or write plainly (F_x -> "F sub x")
-          - Square root: √x (not \\sqrt{{x}})
-          - Fractions: write as "dy/dx" or "(a+b)/c", or use ½ ⅓ ¼ for simple ones
-          - Symbols: use ∂ π ∞ ≤ ≥ × ÷ ± ∫ Σ Δ → directly as characters
-          - Do NOT use LaTeX commands or backslashes (no \\frac, \\lim, \\sqrt, \\(, \\[, $$, etc.)
-        - Do not use markdown formatting (no **bold**, no *italics*, no markdown bullet asterisks).
-        - Use plain numbered lists (1. 2. 3.) or simple dashes (-) for lists.
-        - Write in plain, complete sentences.
-
-        Context:
-        {context}
-
-        Question: {question}
-        Answer:
-    """
-
-    prompt = ChatPromptTemplate.from_template(template)
-
-    rag_chain = (
-        {"context": retriever, "question": RunnablePassthrough()}
-        | prompt
-        | llm
-        | StrOutputParser()
-    )
-    return rag_chain
-
-
 def build_search_tool(vectorstore: Chroma):
     @tool
     def search_documents(query: str) -> str:
@@ -142,25 +107,19 @@ def build_agent(vectorstore: Chroma, llm):
     search_tool = build_search_tool(vectorstore)
     tools = [search_tool]
 
-    agent_prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                """You are a helpful assistant that answers questions using
+    agent_prompt = """You are a helpful assistant that answers questions using
             the search_documents tool to find relevant information. Search as many times
             as needed with different queries to fully answer the question.
 
             FORMATTING RULES - displayed in a plain terminal:
             - No LaTeX, no markdown bold/bullets. Use Unicode math symbols (², √, ∂, etc.)
-              and plain dashes for lists.""",
-            ),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ]
+              and plain dashes for lists."""
+
+    agent = create_agent(
+        model=llm, tools=tools, system_prompt=agent_prompt, checkpointer=InMemorySaver()
     )
 
-    agent = create_tool_calling_agent(llm, tools, agent_prompt)
-    return AgentExecutor(agent=agent, tools=tools, verbose=True)
+    return agent
 
 
 # result = rag_chain.invoke("What subjects do I have to study")
