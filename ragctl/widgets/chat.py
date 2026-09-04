@@ -46,6 +46,8 @@ class Chat(Widget):
         log.write(f"[bold cyan]> {question}[/bold cyan]")
         input_widget.value = ""
 
-        result = await self.rag_chain.ainvoke({"input": question})
-        answer = result["output"]
+        result = await self.rag_chain.ainvoke(
+            {"messages": [{"role": "user", "content": question}]}
+        )
+        answer = result["messages"][-1].content
         log.write(f"{answer}\n")
