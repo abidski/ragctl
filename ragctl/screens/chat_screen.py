@@ -10,7 +10,7 @@ from ragctl.rag import (
     build_llm,
     build_vectorstore,
     load_documents,
-    rag_chain,
+    build_agent,
     split_documents,
 )
 from ragctl.widgets.chat import Chat
@@ -38,8 +38,8 @@ class ChatScreen(Screen):
             docs = load_documents(self.docs_folder)
             splits = split_documents(docs)
             vectorstore = build_vectorstore(splits)
-            self.rag_chain = rag_chain(vectorstore, llm)
-            self.app.call_from_thread(self._on_ready, self.rag_chain)
+            agent = build_agent(vectorstore, llm)
+            self.app.call_from_thread(self._on_ready, agent)
         except Exception as e:
             self.app.call_from_thread(self._on_error, str(e))
 
