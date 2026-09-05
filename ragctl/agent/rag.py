@@ -27,6 +27,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import Runnable, RunnablePassthrough
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from ragctl.agent.pdf import pdf_tool
 
 MODELS_BY_PROVIDER = {
     "groq": "openai/gpt-oss-120b",
@@ -105,7 +106,7 @@ def build_search_tool(vectorstore: Chroma):
 def build_agent(vectorstore: Chroma, llm):
 
     search_tool = build_search_tool(vectorstore)
-    tools = [search_tool]
+    tools = [search_tool, pdf_tool]
 
     agent_prompt = """You are a helpful assistant that answers questions using
             the search_documents tool to find relevant information. Search as many times
