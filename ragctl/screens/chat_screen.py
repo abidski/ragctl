@@ -6,7 +6,7 @@ from textual.screen import Screen
 from textual.widgets import Footer, Header, LoadingIndicator
 from textual.widgets import Static
 
-from ragctl.rag import (
+from ragctl.agent.rag import (
     build_llm,
     build_vectorstore,
     load_documents,
